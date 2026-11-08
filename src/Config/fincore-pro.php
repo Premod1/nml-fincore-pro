@@ -32,7 +32,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'route_prefix' => env('FINCORE_PRO_PREFIX', 'accounting'),
-    'middleware' => ['web', 'auth'],
+    'middleware' => ['web'], // Add 'auth' in production ERP via config/fincore-pro.php
 
     /*
     |--------------------------------------------------------------------------

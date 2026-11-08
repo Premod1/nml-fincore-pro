@@ -26,6 +26,7 @@
         margin-bottom: 1.25rem;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
         align-items: center;
+        position: relative;
     }
 
     .fc-subnav-link {
@@ -38,6 +39,9 @@
         font-weight: 500;
         color: #334155;
         text-decoration: none !important;
+        background: transparent;
+        border: none;
+        cursor: pointer;
         transition: all 0.15s ease;
     }
 
@@ -50,6 +54,53 @@
         background: var(--fc-primary);
         color: #ffffff !important;
         font-weight: 600;
+    }
+
+    /* Clean UI Dropdown System (No conflict with host Bootstrap) */
+    .fc-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .fc-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1050;
+        min-width: 210px;
+        padding: 0.4rem 0;
+        margin-top: 0.25rem;
+        background: #ffffff;
+        border: 1px solid var(--fc-border);
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .fc-dropdown:hover .fc-dropdown-menu,
+    .fc-dropdown:focus-within .fc-dropdown-menu {
+        display: block;
+    }
+
+    .fc-dropdown-item {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        font-size: 0.86rem;
+        color: #334155;
+        text-decoration: none !important;
+        transition: background 0.15s;
+    }
+
+    .fc-dropdown-item:hover {
+        background: #f8fafc;
+        color: var(--fc-primary);
+    }
+
+    .fc-dropdown-divider {
+        height: 1px;
+        margin: 0.35rem 0;
+        background: var(--fc-border);
     }
 
     .fc-card {

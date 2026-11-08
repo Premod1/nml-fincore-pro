@@ -9,7 +9,7 @@ use Nml\FinCorePro\Http\Controllers\ReportController;
 
 Route::group([
     'prefix' => config('fincore-pro.route_prefix', 'accounting'),
-    'middleware' => config('fincore-pro.middleware', ['web', 'auth']),
+    'middleware' => config('fincore-pro.middleware', ['web']),
     'as' => 'fincore.',
 ], function () {
     // 1. Overview Dashboard

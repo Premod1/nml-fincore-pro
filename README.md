@@ -2,36 +2,32 @@
 
 **Commercial UI Starter Kit & Zero-Accounting-Knowledge ERP Posting Rules Engine** for [`nml/fincore`](https://github.com/Premod1/nml-fincore).
 
-> **Note:** This is a commercial/proprietary package. Host this in a **Private GitHub Repository** and distribute access via Composer (Satis / Private Packagist / Anystack / Polar.sh / GitHub Sponsors).
+> **License:** Proprietary / Commercial. Host this in a **Private GitHub Repository** and distribute access via Composer (e.g. Satis, Private Packagist, Polar.sh, or GitHub Sponsors).
 
 ---
 
-## ✨ Key Commercial Features
+## ⚡ Quick Start: Running the Built-in UI Preview (Standalone)
 
-1. **Dual-Mode Bootstrap/Blade UI Wrapper:**
-   * **Embedded Mode (`mode => 'embedded'`):** Renders all accounting views directly inside your existing ERP's Sidebar & Header (`@extends(config('fincore-pro.erp_layout'))`).
-   * **Standalone Mode (`mode => 'standalone'`):** Launches a dedicated full-screen Accounting Portal at `/accounting`.
-   * **Scoped CSS Variables (`.fincore-scope`):** Zero CSS collisions with your existing Bootstrap 4/5 or custom ERP styles.
+You can launch and test the full accounting UI locally without embedding it into an ERP:
 
-2. **Zero-Accounting-Knowledge ERP Event Bridge (`FinCorePro::recordErpEvent`):**
-   * Developers don't need to know Debits, Credits, VAT splits, or COGS inventory journals!
-   * Simply trigger business events from your ERP (`credit_sale`, `cash_sale`, `customer_payment`, `credit_purchase`, `supplier_payment`, `expense_payment`).
-   * Accountants can dynamically re-map which General Ledger accounts are debited/credited directly from the **ERP Auto-Posting Rules UI** (`/accounting/mappings`) without touching code.
+```bash
+cd /home/pramod/project/pramod/nml-fincore-pro
+php preview 8085
+# Or via composer:
+composer serve
+```
 
-3. **Complete Ready-Made Financial Screens:**
-   * Financial Overview KPI Dashboard (`/accounting`)
-   * Chart of Accounts Manager with one-click standard seeding (`/accounting/accounts`)
-   * Real-time Balanced Manual Journal Voucher Creator (`/accounting/journals/create`)
-   * Interactive Trial Balance with Ledger Drill-down (`/accounting/reports/trial-balance`)
-   * Profit & Loss Statement (`/accounting/reports/income-statement`)
-   * Balance Sheet (`/accounting/reports/balance-sheet`)
-   * General Ledger Explorer (`/accounting/reports/general-ledger`)
+Open your browser at: **`http://127.0.0.1:8085/accounting`**
+
+*(This automatically boots a local SQLite database, runs all 14 Core + Pro migrations, and seeds the standard Chart of Accounts & ERP Posting Rules).*
 
 ---
 
-## 🚀 Quick Installation in Your Company ERP (Local Testing)
+## 📖 Developer Guide: Integrating into Your Existing Laravel ERP
 
-Add both local repositories to your ERP's `composer.json`:
+### 1. Add Local Package to Host ERP's `composer.json`
+
+Add repository path references in your host ERP `composer.json`:
 
 ```json
 "repositories": [
@@ -45,12 +41,12 @@ Add both local repositories to your ERP's `composer.json`:
     }
 ],
 "require": {
-    "nml/fincore": "*",
-    "nml/fincore-pro": "*"
+    "nml/fincore": "*@dev|^1.0",
+    "nml/fincore-pro": "*@dev|^1.0"
 }
 ```
 
-Then run:
+Then install and publish assets:
 
 ```bash
 composer require nml/fincore-pro
@@ -58,32 +54,82 @@ php artisan migrate
 php artisan vendor:publish --tag=fincore-pro-config
 ```
 
-Configure your ERP layout in `config/fincore-pro.php` (or `.env`):
+### 2. Configure Host ERP Layout (`config/fincore-pro.php` or `.env`)
+
+To embed FinCore PRO screens seamlessly inside your existing Blade + Bootstrap ERP sidebar/navbar without breaking existing styles:
 
 ```env
 FINCORE_PRO_MODE=embedded
-FINCORE_PRO_LAYOUT=layouts.app
-FINCORE_PRO_SECTION=content
-FINCORE_PRO_COLOR=#2563eb
+FINCORE_PRO_LAYOUT=layouts.master     # The Blade layout file of your ERP
+FINCORE_PRO_SECTION=content           # The @yield section where page content is injected
+FINCORE_PRO_COLOR=#2563eb             # Primary color matching your ERP brand
+FINCORE_PRO_PREFIX=accounting         # Route prefix (e.g. your-erp.com/accounting)
+```
+
+### 3. Add to Host ERP Sidebar Navigation
+
+Add a link in your ERP's sidebar menu pointing to FinCore PRO:
+
+```blade
+<li class="nav-item">
+    <a href="{{ route('fincore.dashboard') }}" class="nav-link">
+        <i class="nav-icon fas fa-calculator"></i>
+        <p>Accounting</p>
+    </a>
+</li>
 ```
 
 ---
 
-## ⚡ Recording ERP Transactions (Zero Accounting Knowledge Needed)
+## 💡 Zero-Accounting-Knowledge ERP Event Bridge (`FinCorePro::recordErpEvent`)
 
-In your `InvoiceController` or `SaleController`:
+Developers **never need to calculate Debits, Credits, Tax lines, or COGS entries in application controllers**. Simply fire business events with standard payloads:
 
+### A. Credit Sale (Customer Invoice)
 ```php
 use Nml\FinCorePro\Facades\FinCorePro;
 
-// Example 1: Credit Sale (Invoice with VAT + Inventory COGS)
 FinCorePro::recordErpEvent('credit_sale', [
-    'net_amount'   => $invoice->sub_total,    // e.g. 10,000.00 -> Credited to Sales Revenue (4000)
-    'tax_amount'   => $invoice->vat_amount,   // e.g.  1,800.00 -> Credited to VAT Payable (2300)
-    'total_amount' => $invoice->grand_total,  // e.g. 11,800.00 -> Debited to Accounts Receivable (1200)
-    'cogs_amount'  => $invoice->total_cost,   // e.g.  6,500.00 -> Debited to COGS (5000) & Credited to Inventory (1300)
-    'reference'    => $invoice,               // Polymorphic link to your ERP Invoice model
-    'partner'      => $invoice->customer,     // Polymorphic link to Customer for AR Ageing
-    'description'  => "Invoice #{$invoice->invoice_no}",
+    'net_amount'   => $invoice->sub_total,    // Credited to Sales Revenue (4000)
+    'tax_amount'   => $invoice->vat_amount,   // Credited to VAT Payable (2300)
+    'total_amount' => $invoice->grand_total,  // Debited to Accounts Receivable (1200)
+    'cogs_amount'  => $invoice->cost_total,   // Debited to COGS (5000) & Credited to Inventory (1300)
+    'reference'    => $invoice,               // Polymorphic reference to ERP Invoice model
+    'partner'      => $invoice->customer,     // Customer model (for AR Ageing)
+    'description'  => "Invoice #{$invoice->invoice_number}",
 ]);
 ```
+
+### B. Customer Payment Received
+```php
+FinCorePro::recordErpEvent('customer_payment', [
+    'total_amount'    => $payment->amount,    // Debited to Bank/Cash (1100)
+    'discount_amount' => $payment->discount,  // Debited to Sales Discount (6130 - optional)
+    'settled_amount'  => $payment->settled,   // Credited to Accounts Receivable (1200)
+    'reference'       => $payment,
+    'description'     => "Payment for Invoice #{$invoice->invoice_number}",
+]);
+```
+
+### C. Credit Purchase (Supplier GRN / Bill)
+```php
+FinCorePro::recordErpEvent('credit_purchase', [
+    'net_amount'   => $grn->sub_total,        // Debited to Merchandise Inventory (1300)
+    'tax_amount'   => $grn->vat_amount,       // Debited to Input VAT (2300)
+    'total_amount' => $grn->grand_total,      // Credited to Accounts Payable (2000)
+    'reference'    => $grn,
+    'partner'      => $grn->supplier,         // Supplier model (for AP Ageing)
+    'description'  => "GRN #{$grn->grn_number}",
+]);
+```
+
+### D. Direct Operational Expense Payment
+```php
+FinCorePro::recordErpEvent('expense_payment', [
+    'total_amount' => 15000.00,               // Debited to Operating Expense (6100)
+    'reference'    => 'CEB-BILL-NOV-2026',
+    'description'  => 'Electricity Bill Payment - Factory',
+]);
+```
+
+> **Account Re-mapping:** Accountants can change which General Ledger accounts are targeted anytime from the **Accounting -> ERP Auto-Posting Rules** UI screen without requiring developer assistance or code changes!

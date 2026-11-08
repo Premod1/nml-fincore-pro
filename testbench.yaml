@@ -1,0 +1,30 @@
+$schema: https://raw.githubusercontent.com/laravel/testbench-core/10.x/laravel/testbench-dusk.schema.json
+
+laravel: '@testbench'
+
+providers:
+  - Nml\FinCore\Providers\FinCoreServiceProvider
+  - Nml\FinCorePro\Providers\FinCoreProServiceProvider
+
+env:
+  APP_NAME: "NML FinCore PRO Preview"
+  APP_DEBUG: true
+  APP_KEY: "base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10="
+  DB_CONNECTION: sqlite
+  FINCORE_PRO_MODE: standalone
+  FINCORE_PRO_PREFIX: accounting
+
+migrations:
+  - ../nml-fincore/src/Database/Migrations
+  - src/Database/Migrations
+
+workbench:
+  start: '/accounting'
+  install: true
+  health: false
+  discovers:
+    web: true
+    api: false
+    commands: false
+    components: false
+    views: false

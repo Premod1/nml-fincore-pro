@@ -1,0 +1,60 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Built-in Standalone UI Preview Launcher for NML FinCore PRO
+ * Usage: php preview [port]
+ */
+
+// Automatically re-invoke with php8.2 if current PHP lacks pdo_sqlite
+if (!extension_loaded('pdo_sqlite') && file_exists('/usr/bin/php8.2')) {
+    $args = array_map('escapeshellarg', $argv);
+    passthru('/usr/bin/php8.2 ' . implode(' ', $args), $code);
+    exit($code);
+}
+
+$port = $argv[1] ?? 8085;
+$rootDir = __DIR__;
+$sqlitePath = $rootDir . '/vendor/orchestra/testbench-core/laravel/database/database.sqlite';
+
+echo "\n=======================================================\n";
+echo " 🚀 NML FinCore PRO - Standalone UI Preview Server\n";
+echo "=======================================================\n";
+
+if (!file_exists(dirname($sqlitePath))) {
+    mkdir(dirname($sqlitePath), 0777, true);
+}
+
+if (!file_exists($sqlitePath)) {
+    touch($sqlitePath);
+    echo "✓ Created local SQLite preview database.\n";
+}
+
+putenv("TESTBENCH_WORKING_PATH={$rootDir}");
+putenv("DB_CONNECTION=sqlite");
+putenv("DB_DATABASE={$sqlitePath}");
+putenv("APP_KEY=base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10=");
+putenv("FINCORE_PRO_MODE=standalone");
+
+echo "📦 Running Core & Pro migrations...\n";
+passthru(PHP_BINARY . ' ' . escapeshellarg($rootDir . '/vendor/bin/testbench') . ' migrate --force');
+
+// Seed standard Chart of Accounts and Default ERP Rules automatically for preview
+require $rootDir . '/vendor/autoload.php';
+
+$app = \Orchestra\Testbench\Foundation\Application::createFromConfig(
+    \Orchestra\Testbench\Foundation\Config::loadFromYaml($rootDir)
+);
+$kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+\Nml\FinCore\Services\ChartOfAccountsInitializer::initialize();
+$app->make(\Nml\FinCorePro\Services\ErpPostingEngine::class)->syncDefaultRules();
+
+echo "✓ Seeded standard Chart of Accounts & ERP Posting Rules!\n";
+echo "-------------------------------------------------------\n";
+echo "🌐 Open UI in Browser: http://127.0.0.1:{$port}/accounting\n";
+echo "-------------------------------------------------------\n\n";
+
+$docRoot = $rootDir . '/vendor/orchestra/testbench-core/laravel/public';
+passthru(PHP_BINARY . " -S 127.0.0.1:{$port} -t " . escapeshellarg($docRoot));
