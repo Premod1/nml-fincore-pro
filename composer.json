@@ -1,0 +1,52 @@
+{
+    "name": "nml/fincore-pro",
+    "description": "NML FinCore PRO - Commercial UI Starter Kit & Zero-Accounting-Knowledge ERP Posting Rules Engine for nml/fincore",
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Pramod Suraweera",
+            "email": "premodsuraweera1@gmail.com",
+            "homepage": "https://premod.me/"
+        }
+    ],
+    "homepage": "https://premod.me/",
+    "autoload": {
+        "psr-4": {
+            "Nml\\FinCorePro\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Nml\\FinCorePro\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nml\\FinCorePro\\Providers\\FinCoreProServiceProvider"
+            ],
+            "aliases": {
+                "FinCorePro": "Nml\\FinCorePro\\Facades\\FinCorePro"
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../nml-fincore"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/routing": "^10.0|^11.0|^12.0",
+        "illuminate/view": "^10.0|^11.0|^12.0",
+        "nml/fincore": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5",
+        "orchestra/testbench": "^9.0"
+    }
+}
