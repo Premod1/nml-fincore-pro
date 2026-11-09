@@ -22,6 +22,8 @@ class FinCoreProServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
+
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'fincore-pro');
         $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');

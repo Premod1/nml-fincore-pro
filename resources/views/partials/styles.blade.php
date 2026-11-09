@@ -235,6 +235,56 @@
         background-color: var(--fc-primary-hover) !important;
     }
 
+    /* Standard Pagination Styling (Clean Bootstrap / QBO) */
+    .pagination {
+        display: flex;
+        padding-left: 0;
+        list-style: none;
+        gap: 0.25rem;
+        margin: 0;
+    }
+
+    .page-item .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.82rem;
+        color: var(--fc-text);
+        background-color: #ffffff;
+        border: 1px solid var(--fc-border);
+        border-radius: 4px !important;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .page-item .page-link:hover {
+        background-color: var(--fc-bg-subtle);
+        color: var(--fc-primary);
+        border-color: var(--fc-border);
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--fc-primary);
+        border-color: var(--fc-primary);
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .page-item.disabled .page-link {
+        color: var(--fc-text-muted);
+        background-color: #fafafb;
+        border-color: var(--fc-border-light);
+        cursor: not-allowed;
+    }
+
+    /* Prevent Raw SVG Blowup from unstyled pagination */
+    .fincore-scope svg {
+        max-width: 1rem;
+        max-height: 1rem;
+        vertical-align: middle;
+    }
+
     @media print {
         .fc-subnav, .fc-no-print {
             display: none !important;
