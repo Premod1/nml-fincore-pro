@@ -14,19 +14,32 @@ class AccountController extends Controller
     public function index(Request $request, LedgerEngine $ledger)
     {
         $typeFilter = $request->query('type');
+        $search = $request->query('search');
+        $perPage = (int) $request->query('per_page', 25);
+
         $query = Account::orderBy('code');
 
         if ($typeFilter) {
             $query->where('type', $typeFilter);
         }
 
-        $accounts = $query->get();
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('subtype', 'like', "%{$search}%");
+            });
+        }
+
+        $accounts = $query->paginate($perPage)->withQueryString();
         $balances = $ledger->getBalancesForAccounts($accounts->pluck('id')->toArray());
 
         return view('fincore-pro::pages.accounts.index', [
             'accounts'   => $accounts,
             'balances'   => $balances,
             'typeFilter' => $typeFilter,
+            'search'     => $search,
+            'perPage'    => $perPage,
             'currency'   => config('accounting.currency', 'LKR'),
             'types'      => AccountType::cases(),
         ]);

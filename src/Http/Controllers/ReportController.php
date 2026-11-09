@@ -63,8 +63,12 @@ class ReportController extends Controller
         $accountId = $request->filled('account_id') ? (int) $request->query('account_id') : null;
         $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('end_date', now()->format('Y-m-d'));
+        $sbuCode = $request->query('sbu_code');
+        $perPage = (int) $request->query('per_page', 50);
+        $page = (int) $request->query('page', 1);
 
-        $report = $ledger->getGeneralLedger($accountId, $startDate, $endDate);
+        // Performance: Pass pagination parameters to LedgerEngine
+        $report = $ledger->getGeneralLedger($accountId, $startDate, $endDate, $sbuCode, $perPage, $page);
         $allAccounts = Account::where('is_active', true)->orderBy('code')->get();
 
         return view('fincore-pro::pages.reports.general-ledger', [
@@ -73,6 +77,8 @@ class ReportController extends Controller
             'accountId'   => $accountId,
             'startDate'   => $startDate,
             'endDate'     => $endDate,
+            'perPage'     => $perPage,
+            'page'        => $page,
             'currency'    => config('accounting.currency', 'LKR'),
         ]);
     }

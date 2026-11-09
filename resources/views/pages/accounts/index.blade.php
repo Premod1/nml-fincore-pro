@@ -10,7 +10,7 @@
             <form action="{{ route('fincore.accounts.seed') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-outline-secondary btn-sm">
-                    + Seed Default Accounts
+                    + Seed Standard Accounts
                 </button>
             </form>
         </div>
@@ -19,29 +19,39 @@
     <div class="row g-3">
         <div class="col-lg-8">
             <div class="fc-card">
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <a href="{{ route('fincore.accounts.index') }}"
-                       class="btn btn-sm {{ !$typeFilter ? 'fc-btn-primary' : 'btn-outline-secondary' }}">
-                        All Types
-                    </a>
-                    @foreach($types as $t)
-                        <a href="{{ route('fincore.accounts.index', ['type' => $t->value]) }}"
-                           class="btn btn-sm {{ $typeFilter === $t->value ? 'fc-btn-primary' : 'btn-outline-secondary' }}">
-                            {{ ucfirst($t->value) }}
-                        </a>
-                    @endforeach
-                </div>
+                {{-- Search & Type Filter Toolbar --}}
+                <form method="GET" action="{{ route('fincore.accounts.index') }}" class="row g-2 mb-3">
+                    <div class="col-md-5">
+                        <input type="text" name="search" class="form-control form-control-sm"
+                               placeholder="Search Code or Account Name..." value="{{ $search }}">
+                    </div>
+                    <div class="col-md-4">
+                        <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Account Types</option>
+                            @foreach($types as $t)
+                                <option value="{{ $t->value }}" {{ $typeFilter === $t->value ? 'selected' : '' }}>
+                                    {{ ucfirst($t->value) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-1">
+                        <button type="submit" class="btn fc-btn-primary btn-sm flex-grow-1">Filter</button>
+                        @if($search || $typeFilter)
+                            <a href="{{ route('fincore.accounts.index') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                        @endif
+                    </div>
+                </form>
 
                 <div class="table-responsive">
                     <table class="fc-table">
                         <thead>
                             <tr>
-                                <th>Code</th>
-                                <th>Account Name</th>
-                                <th>Type</th>
-                                <th>Subtype</th>
-                                <th class="text-end">Current Balance</th>
-                                <th></th>
+                                <th style="width: 15%;">Code</th>
+                                <th style="width: 35%;">Account Name</th>
+                                <th style="width: 15%;">Type</th>
+                                <th style="width: 15%;">Subtype</th>
+                                <th style="width: 20%;" class="text-end">Balance ({{ $currency }})</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -51,35 +61,44 @@
                                     $bal = $balances[$acc->id] ?? 0.0;
                                 @endphp
                                 <tr>
-                                    <td class="fw-bold">{{ $acc->code }}</td>
-                                    <td class="fw-semibold">{{ $acc->name }}</td>
+                                    <td class="text-muted fw-semibold">{{ $acc->code }}</td>
+                                    <td>
+                                        <a href="{{ route('fincore.reports.general-ledger', ['account_id' => $acc->id]) }}"
+                                           class="fc-drill-link">
+                                            {{ $acc->name }}
+                                        </a>
+                                    </td>
                                     <td><span class="fc-badge fc-badge-info">{{ strtoupper($typeVal) }}</span></td>
                                     <td class="text-muted small">{{ $acc->subtype }}</td>
-                                    <td class="text-end fw-bold">
-                                        {{ $currency }} {{ number_format($bal, 2) }}
-                                    </td>
-                                    <td class="text-end">
+                                    <td class="text-end fw-semibold">
                                         <a href="{{ route('fincore.reports.general-ledger', ['account_id' => $acc->id]) }}"
-                                           class="btn btn-sm btn-light">
-                                            Ledger &rarr;
+                                           class="fc-drill-link text-dark">
+                                            {{ number_format($bal, 2) }}
                                         </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">
-                                        No accounts found. Click <strong>Seed Default Accounts</strong> to load the standard Chart of Accounts.
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        No accounts found matching filter.
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+
+                {{-- Pagination Links --}}
+                @if($accounts->hasPages())
+                    <div class="mt-3">
+                        {{ $accounts->links() }}
+                    </div>
+                @endif
             </div>
         </div>
 
         <div class="col-lg-4">
-            <div class="fc-card">
+            <div class="fc-card sticky-top" style="top: 1rem;">
                 <h6 class="fw-bold mb-3">Create New Ledger Account</h6>
                 <form action="{{ route('fincore.accounts.store') }}" method="POST">
                     @csrf
@@ -89,10 +108,10 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Account Name</label>
-                        <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Sampath Bank Current A/C" required>
+                        <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Commercial Bank Current A/C" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Account Classification</label>
+                        <label class="form-label small fw-semibold">Classification Type</label>
                         <select name="type" class="form-select form-select-sm" required>
                             @foreach($types as $t)
                                 <option value="{{ $t->value }}">{{ ucfirst($t->value) }}</option>

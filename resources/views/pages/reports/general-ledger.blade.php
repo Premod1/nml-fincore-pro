@@ -92,6 +92,21 @@
                         </tbody>
                     </table>
                 </div>
+
+                {{-- Account Level Pagination if lines exceed perPage --}}
+                @if(!empty($item['pagination']) && $item['pagination']['last_page'] > 1)
+                    <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top small text-muted">
+                        <div>Showing page {{ $item['pagination']['current_page'] }} of {{ $item['pagination']['last_page'] }} (Total {{ $item['pagination']['total'] }} entries)</div>
+                        <div class="d-flex gap-1">
+                            @if($item['pagination']['current_page'] > 1)
+                                <a href="{{ request()->fullUrlWithQuery(['page' => $item['pagination']['current_page'] - 1]) }}" class="btn btn-outline-secondary btn-sm py-0 px-2">&laquo; Prev</a>
+                            @endif
+                            @if($item['pagination']['current_page'] < $item['pagination']['last_page'])
+                                <a href="{{ request()->fullUrlWithQuery(['page' => $item['pagination']['current_page'] + 1]) }}" class="btn btn-outline-secondary btn-sm py-0 px-2">Next &raquo;</a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </div>
         @endif
     @endforeach
