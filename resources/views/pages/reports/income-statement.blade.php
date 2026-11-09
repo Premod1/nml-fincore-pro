@@ -3,73 +3,125 @@
 @section('fincore_content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
-            <h4 class="fw-bold mb-0">Profit &amp; Loss (Income Statement)</h4>
-            <small class="text-muted">Period: {{ $startDate }} to {{ $endDate }} ({{ $currency }})</small>
+            <h4 class="fw-bold mb-0">Profit and Loss</h4>
+            <small class="text-muted">Reporting Period: {{ $startDate }} to {{ $endDate }} ({{ $currency }})</small>
         </div>
-        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm fc-no-print">🖨️ Print / Save PDF</button>
+        <div class="d-flex gap-2 fc-no-print">
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">🖨️ Print / Export PDF</button>
+        </div>
     </div>
 
+    {{-- Date Filter Bar --}}
     <div class="fc-card fc-no-print">
         <form method="GET" action="{{ route('fincore.reports.income-statement') }}" class="row g-2 align-items-end">
             <div class="col-md-4">
-                <label class="form-label small fw-semibold">Start Date</label>
+                <label class="form-label small fw-semibold">Report Period From</label>
                 <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDate }}">
             </div>
             <div class="col-md-4">
-                <label class="form-label small fw-semibold">End Date</label>
+                <label class="form-label small fw-semibold">Report Period To</label>
                 <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDate }}">
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn fc-btn-primary btn-sm w-100">Update Statement</button>
+                <button type="submit" class="btn fc-btn-primary btn-sm w-100">Run Report</button>
             </div>
         </form>
     </div>
 
+    {{-- Statement Sheet --}}
     <div class="fc-card">
-        <h6 class="fw-bold text-uppercase text-success mb-2">Operating Revenue</h6>
-        <table class="fc-table mb-4">
-            <tbody>
-                @forelse($report['revenue']['accounts'] as $item)
-                    <tr>
-                        <td style="width: 15%" class="fw-bold">{{ $item['account']->code }}</td>
-                        <td>{{ $item['account']->name }}</td>
-                        <td class="text-end fw-semibold">{{ number_format($item['balance'], 2) }}</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="3" class="text-muted">No revenue recorded for period.</td></tr>
-                @endforelse
-            </tbody>
-            <tfoot>
-                <tr class="fw-bold bg-light">
-                    <td colspan="2">Total Revenue</td>
-                    <td class="text-end text-success">{{ $currency }} {{ number_format($report['revenue']['total'], 2) }}</td>
-                </tr>
-            </tfoot>
-        </table>
+        <div class="text-center mb-4">
+            <h5 class="fw-bold mb-1">{{ config('fincore-pro.theme.brand_name', 'FinCore Accounting') }}</h5>
+            <h6 class="text-muted mb-0">PROFIT AND LOSS STATEMENT</h6>
+            <small class="text-muted">{{ date('F d, Y', strtotime($startDate)) }} — {{ date('F d, Y', strtotime($endDate)) }}</small>
+        </div>
 
-        <h6 class="fw-bold text-uppercase text-danger mb-2">Operating &amp; Cost Expenses</h6>
-        <table class="fc-table mb-4">
-            <tbody>
-                @forelse($report['expenses']['accounts'] as $item)
-                    <tr>
-                        <td style="width: 15%" class="fw-bold">{{ $item['account']->code }}</td>
-                        <td>{{ $item['account']->name }}</td>
-                        <td class="text-end fw-semibold">{{ number_format($item['balance'], 2) }}</td>
+        {{-- Revenue Section --}}
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
+                <span class="fw-bold text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em; color: var(--fc-success);">
+                    Operating Income
+                </span>
+                <span class="small text-muted fw-semibold">TOTAL ({{ $currency }})</span>
+            </div>
+            <table class="fc-table">
+                <tbody>
+                    @forelse($report['revenue']['accounts'] as $item)
+                        <tr>
+                            <td style="width: 15%;" class="text-muted">{{ $item['account']->code }}</td>
+                            <td>
+                                {{-- QBO Drill-Down Link to General Ledger --}}
+                                <a href="{{ route('fincore.reports.general-ledger', ['account_id' => $item['account']->id, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
+                                   class="fc-drill-link">
+                                    {{ $item['account']->name }}
+                                </a>
+                            </td>
+                            <td class="text-end fw-semibold" style="width: 25%;">
+                                <a href="{{ route('fincore.reports.general-ledger', ['account_id' => $item['account']->id, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
+                                   class="fc-drill-link text-dark">
+                                    {{ number_format($item['balance'], 2) }}
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" class="text-muted py-2">No operating income recorded during this period.</td></tr>
+                    @endforelse
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold" style="background: #f8fafc; border-top: 1px solid var(--fc-border); border-bottom: 2px solid var(--fc-border);">
+                        <td colspan="2">Total Operating Income</td>
+                        <td class="text-end text-success">{{ $currency }} {{ number_format($report['revenue']['total'], 2) }}</td>
                     </tr>
-                @empty
-                    <tr><td colspan="3" class="text-muted">No expenses recorded for period.</td></tr>
-                @endforelse
-            </tbody>
-            <tfoot>
-                <tr class="fw-bold bg-light">
-                    <td colspan="2">Total Expenses</td>
-                    <td class="text-end text-danger">{{ $currency }} {{ number_format($report['expenses']['total'], 2) }}</td>
-                </tr>
-            </tfoot>
-        </table>
+                </tfoot>
+            </table>
+        </div>
 
-        <div class="d-flex justify-content-between align-items-center p-3 rounded border bg-light">
-            <h5 class="fw-bold mb-0">Net Profit / (Loss)</h5>
+        {{-- Expenses Section --}}
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
+                <span class="fw-bold text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em; color: var(--fc-danger);">
+                    Operating &amp; Overhead Expenses
+                </span>
+                <span class="small text-muted fw-semibold">TOTAL ({{ $currency }})</span>
+            </div>
+            <table class="fc-table">
+                <tbody>
+                    @forelse($report['expenses']['accounts'] as $item)
+                        <tr>
+                            <td style="width: 15%;" class="text-muted">{{ $item['account']->code }}</td>
+                            <td>
+                                {{-- QBO Drill-Down Link to General Ledger --}}
+                                <a href="{{ route('fincore.reports.general-ledger', ['account_id' => $item['account']->id, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
+                                   class="fc-drill-link">
+                                    {{ $item['account']->name }}
+                                </a>
+                            </td>
+                            <td class="text-end fw-semibold" style="width: 25%;">
+                                <a href="{{ route('fincore.reports.general-ledger', ['account_id' => $item['account']->id, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
+                                   class="fc-drill-link text-dark">
+                                    {{ number_format($item['balance'], 2) }}
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" class="text-muted py-2">No operating expenses recorded during this period.</td></tr>
+                    @endforelse
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold" style="background: #f8fafc; border-top: 1px solid var(--fc-border); border-bottom: 2px solid var(--fc-border);">
+                        <td colspan="2">Total Operating Expenses</td>
+                        <td class="text-end text-danger">{{ $currency }} {{ number_format($report['expenses']['total'], 2) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {{-- Net Income Result --}}
+        <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background: #f4f7fa; border: 1px solid var(--fc-border);">
+            <div>
+                <h5 class="fw-bold mb-0">NET PROFIT / (LOSS)</h5>
+                <small class="text-muted">Total Income minus Total Expenses</small>
+            </div>
             <h4 class="fw-bold mb-0 {{ $report['net_income'] >= 0 ? 'text-primary' : 'text-danger' }}">
                 {{ $currency }} {{ number_format($report['net_income'], 2) }}
             </h4>

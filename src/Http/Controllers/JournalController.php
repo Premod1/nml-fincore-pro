@@ -89,9 +89,14 @@ class JournalController extends Controller
         }
     }
 
-    public function show(int $id)
+    public function show($id)
     {
-        $entry = JournalEntry::with('lines.account')->findOrFail($id);
+        $query = JournalEntry::with('lines.account');
+        if (is_numeric($id)) {
+            $entry = $query->where('id', $id)->firstOrFail();
+        } else {
+            $entry = $query->where('entry_number', $id)->firstOrFail();
+        }
 
         return view('fincore-pro::pages.journals.show', [
             'entry'    => $entry,
@@ -99,10 +104,10 @@ class JournalController extends Controller
         ]);
     }
 
-    public function post(int $id)
+    public function post($id)
     {
         try {
-            $entry = JournalEntry::findOrFail($id);
+            $entry = is_numeric($id) ? JournalEntry::findOrFail($id) : JournalEntry::where('entry_number', $id)->firstOrFail();
             $entry->post();
 
             return back()->with('fincore_success', "Journal Entry {$entry->entry_number} posted to General Ledger.");
@@ -111,10 +116,10 @@ class JournalController extends Controller
         }
     }
 
-    public function void(int $id)
+    public function void($id)
     {
         try {
-            $entry = JournalEntry::findOrFail($id);
+            $entry = is_numeric($id) ? JournalEntry::findOrFail($id) : JournalEntry::where('entry_number', $id)->firstOrFail();
             $entry->void();
 
             return back()->with('fincore_success', "Journal Entry {$entry->entry_number} has been voided.");
