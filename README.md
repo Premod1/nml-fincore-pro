@@ -2,116 +2,130 @@
 
 **Commercial UI Starter Kit & Zero-Accounting-Knowledge ERP Posting Rules Engine** for [`nml/fincore`](https://github.com/Premod1/nml-fincore).
 
-> **License:** Proprietary / Commercial. Host this in a **Private GitHub Repository** and distribute access via Composer (e.g. Satis, Private Packagist, Polar.sh, or GitHub Sponsors).
+> **License:** Proprietary / Commercial. Distributed to GitHub Sponsors (**$29 Tier**) with automated private repository access and lifetime updates.
 
 ---
 
-## ⚡ Quick Start: Running the Built-in UI Preview (Standalone)
+## 🚀 How to Install & Connect to Your Host Laravel ERP (Post-Sponsorship)
 
-You can launch and test the full accounting UI locally without embedding it into an ERP:
+Once you sponsor **$29** on [GitHub Sponsors (Premod1)](https://github.com/sponsors/Premod1), you are instantly invited as a collaborator to the private `Premod1/nml-fincore-pro` repository.
 
-```bash
-cd /home/pramod/project/pramod/nml-fincore-pro
-php preview 8085
-# Or via composer:
-composer serve
-```
+Follow these 3 simple steps to integrate it into any Laravel ERP, POS, or SaaS application:
 
-Open your browser at: **`http://127.0.0.1:8085/accounting`**
+### Step 1: Configure Private VCS in your ERP's `composer.json`
 
-*(This automatically boots a local SQLite database, runs all 14 Core + Pro migrations, and seeds the standard Chart of Accounts & ERP Posting Rules).*
-
----
-
-## 📖 Developer Guide: Integrating into Your Existing Laravel ERP
-
-### 1. Add Local Package to Host ERP's `composer.json`
-
-Add repository path references in your host ERP `composer.json`:
+Open your host ERP's `composer.json` file and register the repository:
 
 ```json
 "repositories": [
     {
-        "type": "path",
-        "url": "../nml-fincore"
-    },
-    {
-        "type": "path",
-        "url": "../nml-fincore-pro"
+        "type": "vcs",
+        "url": "https://github.com/Premod1/nml-fincore-pro.git"
     }
 ],
 "require": {
-    "nml/fincore": "*@dev|^1.0",
-    "nml/fincore-pro": "*@dev|^1.0"
+    "nml/fincore-pro": "^1.0"
 }
 ```
 
-Then install and publish assets:
+Then run the installation command:
 
 ```bash
 composer require nml/fincore-pro
+```
+
+*(Note: Composer will authenticate using your GitHub account or Personal Access Token if prompted).*
+
+---
+
+### Step 2: Run Migrations & Publish Configuration
+
+Execute the database migrations to create the core accounting tables and ERP posting rules:
+
+```bash
+# 1. Run migrations
 php artisan migrate
+
+# 2. Publish FinCore PRO configuration file
 php artisan vendor:publish --tag=fincore-pro-config
 ```
 
-### 2. Configure Host ERP Layout (`config/fincore-pro.php` or `.env`)
+---
 
-To embed FinCore PRO screens seamlessly inside your existing Blade + Bootstrap ERP sidebar/navbar without breaking existing styles:
+### Step 3: Embed inside your Existing ERP Layout (`config/fincore-pro.php`)
+
+FinCore PRO is built with **Scoped CSS Variables (`.fincore-scope`)**, meaning it will **never break your existing Bootstrap 4, Bootstrap 5, or custom ERP theme styles**.
+
+In your `.env` or `config/fincore-pro.php`:
 
 ```env
+# Mode: 'embedded' seamlessly renders within your ERP's master layout
 FINCORE_PRO_MODE=embedded
-FINCORE_PRO_LAYOUT=layouts.master     # The Blade layout file of your ERP
-FINCORE_PRO_SECTION=content           # The @yield section where page content is injected
-FINCORE_PRO_COLOR=#2563eb             # Primary color matching your ERP brand
-FINCORE_PRO_PREFIX=accounting         # Route prefix (e.g. your-erp.com/accounting)
+
+# The Blade layout file of your ERP (e.g. layouts.app, layouts.admin, layouts.master)
+FINCORE_PRO_LAYOUT=layouts.master
+
+# The @yield section where main page content is injected
+FINCORE_PRO_SECTION=content
+
+# Brand color matching your ERP
+FINCORE_PRO_COLOR=#0077c5
+
+# Route prefix (e.g. your-erp.com/accounting)
+FINCORE_PRO_PREFIX=accounting
 ```
 
-### 3. Add to Host ERP Sidebar Navigation
+---
 
-Add a link in your ERP's sidebar menu pointing to FinCore PRO:
+### Step 4: Add to your ERP's Sidebar Menu
+
+Simply add one link in your ERP's sidebar blade view:
 
 ```blade
 <li class="nav-item">
     <a href="{{ route('fincore.dashboard') }}" class="nav-link">
         <i class="nav-icon fas fa-calculator"></i>
-        <p>Accounting</p>
+        <span>Accounting &amp; Finance</span>
     </a>
 </li>
 ```
 
+Now, clicking **"Accounting & Finance"** opens the complete QuickBooks-style Accounting Suite right inside your ERP!
+
 ---
 
-## 💡 Zero-Accounting-Knowledge ERP Event Bridge (`FinCorePro::recordErpEvent`)
+## ⚡ Zero-Accounting-Knowledge ERP Event Bridge (`FinCorePro::recordErpEvent`)
 
-Developers **never need to calculate Debits, Credits, Tax lines, or COGS entries in application controllers**. Simply fire business events with standard payloads:
+Developers **never need to know debits, credits, tax splits, or inventory journals**. Simply fire business events with standard invoice or payment numbers directly from your controllers:
 
-### A. Credit Sale (Customer Invoice)
+### 1. Credit Sale (Customer Invoice)
 ```php
 use Nml\FinCorePro\Facades\FinCorePro;
 
+// In your InvoiceController@store or POS checkout:
 FinCorePro::recordErpEvent('credit_sale', [
     'net_amount'   => $invoice->sub_total,    // Credited to Sales Revenue (4000)
     'tax_amount'   => $invoice->vat_amount,   // Credited to VAT Payable (2300)
     'total_amount' => $invoice->grand_total,  // Debited to Accounts Receivable (1200)
     'cogs_amount'  => $invoice->cost_total,   // Debited to COGS (5000) & Credited to Inventory (1300)
-    'reference'    => $invoice,               // Polymorphic reference to ERP Invoice model
+    'reference'    => $invoice,               // Polymorphic reference to your Invoice model
     'partner'      => $invoice->customer,     // Customer model (for AR Ageing)
     'description'  => "Invoice #{$invoice->invoice_number}",
 ]);
 ```
 
-### B. Customer Payment Received
+### 2. Customer Payment Received
 ```php
 FinCorePro::recordErpEvent('customer_payment', [
     'total_amount'    => $payment->amount,    // Debited to Bank/Cash (1100)
-    'discount_amount' => $payment->discount,  // Debited to Sales Discount (6130 - optional)
+    'discount_amount' => $payment->discount,  // Debited to Sales Discount (6130)
     'settled_amount'  => $payment->settled,   // Credited to Accounts Receivable (1200)
     'reference'       => $payment,
     'description'     => "Payment for Invoice #{$invoice->invoice_number}",
 ]);
 ```
 
-### C. Credit Purchase (Supplier GRN / Bill)
+### 3. Credit Purchase (Supplier GRN / Bill)
 ```php
 FinCorePro::recordErpEvent('credit_purchase', [
     'net_amount'   => $grn->sub_total,        // Debited to Merchandise Inventory (1300)
@@ -123,13 +137,37 @@ FinCorePro::recordErpEvent('credit_purchase', [
 ]);
 ```
 
-### D. Direct Operational Expense Payment
+### 4. Supplier Payment Made
 ```php
-FinCorePro::recordErpEvent('expense_payment', [
-    'total_amount' => 15000.00,               // Debited to Operating Expense (6100)
-    'reference'    => 'CEB-BILL-NOV-2026',
-    'description'  => 'Electricity Bill Payment - Factory',
+FinCorePro::recordErpEvent('supplier_payment', [
+    'total_amount' => $billPayment->amount,   // Debited to Accounts Payable (2000) & Credited to Bank (1100)
+    'reference'    => $billPayment,
+    'description'  => "Settlement of Bill #{$bill->bill_number}",
 ]);
 ```
 
-> **Account Re-mapping:** Accountants can change which General Ledger accounts are targeted anytime from the **Accounting -> ERP Auto-Posting Rules** UI screen without requiring developer assistance or code changes!
+### 5. Direct Operational Expense Payment
+```php
+FinCorePro::recordErpEvent('expense_payment', [
+    'total_amount' => 15000.00,               // Debited to Operating Expense (6100) & Credited to Cash (1000)
+    'reference'    => 'CEB-BILL-NOV-2026',
+    'description'  => 'Electricity Bill Payment - Office',
+]);
+```
+
+> **Dynamic Re-Mapping:** If your accountant ever wants to change which accounts are debited or credited, they can do so directly from **Accounting -> Settings -> ERP Posting Rules** without touching any code!
+
+---
+
+## 🧪 Local Testing & Standalone Preview (Zero ERP Dependency)
+
+To preview and test the complete UI on your local machine without an ERP:
+
+```bash
+cd nml-fincore-pro
+php preview 8085
+# Or via composer:
+composer serve
+```
+
+Visit: **`http://127.0.0.1:8085/accounting`**
