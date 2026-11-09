@@ -1,0 +1,30 @@
+name: Grant Sponsor Access to FinCore PRO
+
+on:
+  sponsorship:
+    types: [created]
+
+jobs:
+  grant-access:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Sponsor as Collaborator
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PRO_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const sponsor = context.payload.sponsorship.sponsor.login;
+            const tier = context.payload.sponsorship.tier.monthly_price_in_cents;
+            
+            // $29 Tier is 2900 cents
+            console.log(`Processing sponsorship from ${sponsor} for tier ${tier} cents`);
+            
+            if (tier >= 2900) {
+              await github.rest.repos.addCollaborator({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: sponsor,
+                permission: 'pull'
+              });
+              console.log(`Successfully granted Read/Pull access to ${sponsor}`);
+            }
