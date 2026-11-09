@@ -3,6 +3,7 @@
 namespace Nml\FinCorePro\Services;
 
 use Illuminate\Database\Eloquent\Model;
+use Nml\FinCore\Enums\JvType;
 use Nml\FinCore\Exceptions\AccountingException;
 use Nml\FinCore\Models\Account;
 use Nml\FinCore\Models\JournalEntry;
@@ -131,15 +132,18 @@ class ErpPostingEngine
             ];
         }
 
-        $refModel = $payload['model'] ?? ($payload['reference'] instanceof Model ? $payload['reference'] : null);
-        $refString = is_string($payload['reference'] ?? null)
-            ? $payload['reference']
+        $rawRef = $payload['reference'] ?? null;
+        $refModel = $payload['model'] ?? ($rawRef instanceof Model ? $rawRef : null);
+        $refString = is_string($rawRef)
+            ? $rawRef
             : ($refModel ? class_basename($refModel) . '#' . $refModel->getKey() : null);
+
+        $jvType = JvType::tryFrom((string) $rule->jv_type) ?? JvType::GENERAL;
 
         $entry = $this->ledgerEngine->createJournalEntry([
             'date'             => $payload['date'] ?? now()->format('Y-m-d'),
             'reference'        => $refString,
-            'type'             => $rule->jv_type,
+            'type'             => $jvType->value,
             'description'      => $payload['description'] ?? $rule->name,
             'currency'         => $payload['currency'] ?? config('accounting.currency', 'LKR'),
             'exchange_rate'    => $payload['exchange_rate'] ?? 1.0,
