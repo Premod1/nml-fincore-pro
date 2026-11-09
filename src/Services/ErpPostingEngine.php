@@ -34,6 +34,13 @@ class ErpPostingEngine
                 ]
             );
 
+            // If rule already exists, keep its name and description updated
+            $rule->update([
+                'name'        => $ruleData['name'],
+                'description' => $ruleData['description'] ?? null,
+                'jv_type'     => $ruleData['jv_type'] ?? 'general',
+            ]);
+
             if ($rule->lines()->count() === 0 && !empty($ruleData['lines'])) {
                 foreach ($ruleData['lines'] as $index => $lineDef) {
                     $account = null;
@@ -163,6 +170,11 @@ class ErpPostingEngine
         $discount = (float) ($payload['discount_amount'] ?? $payload['discount'] ?? 0.0);
         $settled = (float) ($payload['settled_amount'] ?? ($total + $discount));
         $cogs = (float) ($payload['cogs_amount'] ?? $payload['cogs'] ?? $payload['cost_amount'] ?? 0.0);
+        $gross = (float) ($payload['gross_amount'] ?? $payload['gross'] ?? $total);
+        $epfEtf = (float) ($payload['epf_etf_amount'] ?? $payload['epf_etf'] ?? 0.0);
+        if ($net <= 0 && $gross > 0 && $epfEtf > 0) {
+            $net = $gross - $epfEtf;
+        }
 
         return array_merge($payload, [
             'net_amount'      => $net,
@@ -171,6 +183,8 @@ class ErpPostingEngine
             'discount_amount' => $discount,
             'settled_amount'  => $settled,
             'cogs_amount'     => $cogs,
+            'gross_amount'    => $gross,
+            'epf_etf_amount'  => $epfEtf,
         ]);
     }
 }
