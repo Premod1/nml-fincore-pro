@@ -157,8 +157,8 @@
     </div>
 
     {{-- 7. Settings (Right Aligned) --}}
-    <a href="{{ route('fincore.mappings.index') }}"
-       class="fc-subnav-link ms-auto {{ request()->routeIs('fincore.mappings.*') ? 'active' : '' }}">
+    <a href="{{ route('fincore.settings.index') }}"
+       class="fc-subnav-link ms-auto {{ request()->routeIs('fincore.settings.*') ? 'active' : '' }}">
         ⚙️ Settings
     </a>
 </div>

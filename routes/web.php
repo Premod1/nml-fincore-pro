@@ -34,8 +34,16 @@ Route::group([
     Route::get('/reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance-sheet');
     Route::get('/reports/general-ledger', [ReportController::class, 'generalLedger'])->name('reports.general-ledger');
 
-    // 5. Zero-Accounting-Knowledge ERP Posting Rules & Account Mapping UI
-    Route::get('/mappings', [MappingController::class, 'index'])->name('mappings.index');
+    // 5. Accounting Settings Suite
+    Route::get('/settings', [Nml\FinCorePro\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings/taxes', [Nml\FinCorePro\Http\Controllers\SettingsController::class, 'storeTax'])->name('settings.taxes.store');
+    Route::post('/settings/taxes/{id}/toggle', [Nml\FinCorePro\Http\Controllers\SettingsController::class, 'toggleTax'])->name('settings.taxes.toggle');
+    Route::post('/settings/fiscal', [Nml\FinCorePro\Http\Controllers\SettingsController::class, 'storeFiscalYear'])->name('settings.fiscal.store');
+
+    // Mappings alias for backwards compatibility
+    Route::get('/mappings', function () {
+        return redirect()->route('fincore.settings.index', ['tab' => 'rules']);
+    })->name('mappings.index');
     Route::post('/mappings/sync', [MappingController::class, 'syncDefaults'])->name('mappings.sync');
     Route::put('/mappings/{ruleId}', [MappingController::class, 'update'])->name('mappings.update');
     Route::post('/mappings/test-event', [MappingController::class, 'testEvent'])->name('mappings.test');
