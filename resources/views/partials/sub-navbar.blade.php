@@ -16,6 +16,14 @@
                 🗂️ <strong>New Ledger Account</strong> <small class="text-muted d-block">Add to Chart of Accounts</small>
             </a>
             <div class="fc-dropdown-divider"></div>
+            <a href="{{ route('fincore.assets.index') }}" class="fc-dropdown-item">
+                🏢 <strong>Register Fixed Asset</strong> <small class="text-muted d-block">Capital equipment &amp; depreciation</small>
+            </a>
+            <div class="fc-dropdown-divider"></div>
+            <a href="{{ route('fincore.banking.reconciliations.index') }}" class="fc-dropdown-item">
+                🏦 <strong>Bank Reconciliation</strong> <small class="text-muted d-block">Match ledger against statement</small>
+            </a>
+            <div class="fc-dropdown-divider"></div>
             <a href="{{ route('fincore.mappings.index') }}" class="fc-dropdown-item">
                 ⚡ <strong>ERP Posting Rules</strong> <small class="text-muted d-block">Automate sales &amp; bills</small>
             </a>
@@ -30,7 +38,7 @@
 
     {{-- 2. Banking & Cash --}}
     <div class="fc-dropdown">
-        <button type="button" class="fc-dropdown-toggle fc-subnav-link">
+        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.banking.*') ? 'active' : '' }}">
             Banking ▾
         </button>
         <div class="fc-dropdown-menu" style="min-width: 240px;">
@@ -38,18 +46,15 @@
             <a href="{{ route('fincore.accounts.index', ['type' => 'asset']) }}" class="fc-dropdown-item">
                 Bank &amp; Cash Accounts
             </a>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Bank Reconciliation <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
-            </a>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Internal Bank Transfers <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
+            <a href="{{ route('fincore.banking.reconciliations.index') }}" class="fc-dropdown-item">
+                🏦 Bank Reconciliation
             </a>
         </div>
     </div>
 
     {{-- 3. Sales & Customers --}}
     <div class="fc-dropdown">
-        <button type="button" class="fc-dropdown-toggle fc-subnav-link">
+        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.reports.ar-ageing') ? 'active' : '' }}">
             Sales &amp; Debtors ▾
         </button>
         <div class="fc-dropdown-menu" style="min-width: 250px;">
@@ -61,18 +66,15 @@
                 Customer Receipts &amp; Payments
             </a>
             <div class="fc-dropdown-divider"></div>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                A/R Ageing Analysis <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
-            </a>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Credit Notes &amp; Returns <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
+            <a href="{{ route('fincore.reports.ar-ageing') }}" class="fc-dropdown-item">
+                ⏳ A/R Ageing Analysis (Debtors)
             </a>
         </div>
     </div>
 
     {{-- 4. Expenses & Suppliers --}}
     <div class="fc-dropdown">
-        <button type="button" class="fc-dropdown-toggle fc-subnav-link">
+        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.reports.ap-ageing') ? 'active' : '' }}">
             Expenses &amp; Payables ▾
         </button>
         <div class="fc-dropdown-menu" style="min-width: 250px;">
@@ -87,18 +89,15 @@
                 Operating Expense Payments
             </a>
             <div class="fc-dropdown-divider"></div>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                A/P Ageing Analysis <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
-            </a>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Staff Payroll Vouchers <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
+            <a href="{{ route('fincore.reports.ap-ageing') }}" class="fc-dropdown-item">
+                ⏳ A/P Ageing Analysis (Creditors)
             </a>
         </div>
     </div>
 
     {{-- 5. Accounting & Assets --}}
     <div class="fc-dropdown">
-        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.accounts.*', 'fincore.journals.*') ? 'active' : '' }}">
+        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.accounts.*', 'fincore.journals.*', 'fincore.assets.*', 'fincore.budgets.*') ? 'active' : '' }}">
             Accounting ▾
         </button>
         <div class="fc-dropdown-menu" style="min-width: 260px;">
@@ -113,22 +112,19 @@
                 + New Manual Journal Entry
             </a>
             <div class="fc-dropdown-divider"></div>
-            <div class="px-3 py-1 text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Asset &amp; Period Control</div>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Fixed Assets &amp; Depreciation <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
+            <div class="px-3 py-1 text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Asset &amp; Financial Control</div>
+            <a href="{{ route('fincore.assets.index') }}" class="fc-dropdown-item">
+                🏢 Fixed Assets &amp; Depreciation
             </a>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Close Fiscal Periods / Year <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
-            </a>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Budgeting &amp; Variance <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
+            <a href="{{ route('fincore.budgets.index') }}" class="fc-dropdown-item">
+                📊 Budgeting &amp; Variance Analysis
             </a>
         </div>
     </div>
 
     {{-- 6. Financial Reports --}}
     <div class="fc-dropdown">
-        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.reports.*') ? 'active' : '' }}">
+        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.reports.*', 'fincore.audit-trail.*') ? 'active' : '' }}">
             Reports ▾
         </button>
         <div class="fc-dropdown-menu" style="min-width: 250px;">
@@ -146,12 +142,17 @@
                 📖 General Ledger Statement
             </a>
             <div class="fc-dropdown-divider"></div>
-            <div class="px-3 py-1 text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Audit &amp; Compliance</div>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                Statement of Cash Flows <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
+            <div class="px-3 py-1 text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Sub-Ledger Ageing</div>
+            <a href="{{ route('fincore.reports.ar-ageing') }}" class="fc-dropdown-item">
+                ⏳ A/R Ageing (Debtors)
             </a>
-            <a href="#" class="fc-dropdown-item text-muted disabled">
-                VAT / Tax Schedules <span class="badge bg-light text-muted ms-1" style="font-size:0.6rem;">Soon</span>
+            <a href="{{ route('fincore.reports.ap-ageing') }}" class="fc-dropdown-item">
+                ⏳ A/P Ageing (Creditors)
+            </a>
+            <div class="fc-dropdown-divider"></div>
+            <div class="px-3 py-1 text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Compliance &amp; Security</div>
+            <a href="{{ route('fincore.audit-trail.index') }}" class="fc-dropdown-item">
+                🛡️ System Audit Trail
             </a>
         </div>
     </div>

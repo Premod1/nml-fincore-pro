@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Nml\FinCore\Models\Account;
 use Nml\FinCore\Services\LedgerEngine;
+use Nml\FinCore\Services\PartnerAgeingEngine;
 
 class ReportController extends Controller
 {
@@ -80,6 +81,50 @@ class ReportController extends Controller
             'perPage'     => $perPage,
             'page'        => $page,
             'currency'    => config('accounting.currency', 'LKR'),
+        ]);
+    }
+
+    public function arAgeing(Request $request, PartnerAgeingEngine $engine)
+    {
+        $asOfDate = $request->query('as_of_date', now()->format('Y-m-d'));
+        $report = $engine->getReceivablesAgeingReport($asOfDate);
+
+        $totals = [
+            'current'           => array_sum(array_column($report, 'current')),
+            '1_30'              => array_sum(array_column($report, '1_30')),
+            '31_60'             => array_sum(array_column($report, '31_60')),
+            '61_90'             => array_sum(array_column($report, '61_90')),
+            '91_plus'           => array_sum(array_column($report, '91_plus')),
+            'total_outstanding' => array_sum(array_column($report, 'total_outstanding')),
+        ];
+
+        return view('fincore-pro::pages.reports.ar-ageing', [
+            'report'   => $report,
+            'totals'   => $totals,
+            'asOfDate' => $asOfDate,
+            'currency' => config('accounting.currency', 'LKR'),
+        ]);
+    }
+
+    public function apAgeing(Request $request, PartnerAgeingEngine $engine)
+    {
+        $asOfDate = $request->query('as_of_date', now()->format('Y-m-d'));
+        $report = $engine->getPayablesAgeingReport($asOfDate);
+
+        $totals = [
+            'current'           => array_sum(array_column($report, 'current')),
+            '1_30'              => array_sum(array_column($report, '1_30')),
+            '31_60'             => array_sum(array_column($report, '31_60')),
+            '61_90'             => array_sum(array_column($report, '61_90')),
+            '91_plus'           => array_sum(array_column($report, '91_plus')),
+            'total_outstanding' => array_sum(array_column($report, 'total_outstanding')),
+        ];
+
+        return view('fincore-pro::pages.reports.ap-ageing', [
+            'report'   => $report,
+            'totals'   => $totals,
+            'asOfDate' => $asOfDate,
+            'currency' => config('accounting.currency', 'LKR'),
         ]);
     }
 }
