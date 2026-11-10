@@ -1,30 +1,115 @@
-name: Grant Sponsor Access to FinCore PRO
+name: Sync & Grant Sponsor Access to FinCore PRO
 
 on:
-  sponsorship:
-    types: [created]
+  schedule:
+    # Runs every hour
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows manual trigger anytime from the Actions tab
 
 jobs:
-  grant-access:
+  sync-sponsors:
+    name: Sync Active Sponsors
     runs-on: ubuntu-latest
     steps:
-      - name: Add Sponsor as Collaborator
+      - name: Check Sponsors and Grant Access
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PRO_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
-            const sponsor = context.payload.sponsorship.sponsor.login;
-            const tier = context.payload.sponsorship.tier.monthly_price_in_cents;
-            
-            // $29 Tier is 2900 cents
-            console.log(`Processing sponsorship from ${sponsor} for tier ${tier} cents`);
-            
-            if (tier >= 2900) {
-              await github.rest.repos.addCollaborator({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                username: sponsor,
-                permission: 'pull'
-              });
-              console.log(`Successfully granted Read/Pull access to ${sponsor}`);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const minTierCents = 2900; // $29 minimum tier (2900 cents)
+
+            console.log(`Starting sponsor sync for maintainer '${owner}' on repo '${owner}/${repo}'...`);
+
+            const query = `
+              query($cursor: String) {
+                viewer {
+                  login
+                  sponsorshipsAsMaintainer(first: 100, activeOnly: true, after: $cursor) {
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                    nodes {
+                      createdAt
+                      isActive
+                      isOneTimePayment
+                      sponsorEntity {
+                        ... on User {
+                          login
+                        }
+                        ... on Organization {
+                          login
+                        }
+                      }
+                      tier {
+                        name
+                        monthlyPriceInCents
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            let hasNextPage = true;
+            let cursor = null;
+            let totalChecked = 0;
+            let newlyInvited = 0;
+
+            while (hasNextPage) {
+              let response;
+              try {
+                response = await github.graphql(query, { cursor });
+              } catch (error) {
+                throw new Error(
+                  `GraphQL Sponsors Query Failed: ${error.message}.\n` +
+                  `Note: Please ensure secrets.PRO_ACCESS_TOKEN is set in GitHub repository settings with 'read:org'/'read:user'/'read:sponsors' and 'repo' access.`
+                );
+              }
+
+              const maintainer = response?.viewer;
+              const sponsorships = maintainer?.sponsorshipsAsMaintainer?.nodes || [];
+              const pageInfo = maintainer?.sponsorshipsAsMaintainer?.pageInfo;
+
+              for (const item of sponsorships) {
+                totalChecked++;
+                const sponsorLogin = item.sponsorEntity?.login;
+                const tierPrice = item.tier?.monthlyPriceInCents || 0;
+                const tierName = item.tier?.name || 'Custom';
+
+                if (!sponsorLogin) continue;
+
+                console.log(`Checking sponsor: @${sponsorLogin} (Tier: ${tierName} - ${tierPrice} cents)`);
+
+                if (tierPrice >= minTierCents) {
+                  try {
+                    const addRes = await github.rest.repos.addCollaborator({
+                      owner: owner,
+                      repo: repo,
+                      username: sponsorLogin,
+                      permission: 'pull'
+                    });
+
+                    if (addRes.status === 201) {
+                      console.log(` [INVITED] Successfully invited @${sponsorLogin} as collaborator.`);
+                      newlyInvited++;
+                    } else if (addRes.status === 204) {
+                      console.log(` [EXISTS] @${sponsorLogin} is already a collaborator or invitation is pending.`);
+                    } else {
+                      console.log(` [OK] Status ${addRes.status} for @${sponsorLogin}`);
+                    }
+                  } catch (err) {
+                    console.error(` [ERROR] Failed to invite @${sponsorLogin}: ${err.message}`);
+                  }
+                } else {
+                  console.log(` [SKIPPED] @${sponsorLogin} is on ${tierName} ($${(tierPrice/100).toFixed(2)}), which is below $29.`);
+                }
+              }
+
+              hasNextPage = pageInfo?.hasNextPage || false;
+              cursor = pageInfo?.endCursor || null;
             }
+
+            console.log(`\n Sync completed! Total sponsors checked: ${totalChecked}. Newly invited: ${newlyInvited}.`);
