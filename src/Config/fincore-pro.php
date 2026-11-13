@@ -209,4 +209,21 @@ return [
             ],
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gemini Vision API (AI Receipt & Invoice OCR Scanner)
+    |--------------------------------------------------------------------------
+    |
+    | Configure your Google Gemini API key and model for automated OCR
+    | extraction of supplier receipts and PDF invoices into draft vouchers.
+    |
+    */
+    'gemini' => [
+        'api_key'          => env('GEMINI_API_KEY'),
+        'model'            => env('FINCORE_GEMINI_MODEL', 'gemini-3.8-flash'),
+        'endpoint'         => env('FINCORE_GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/interactions'),
+        'timeout'          => (int) env('FINCORE_GEMINI_TIMEOUT', 45),
+        'max_file_size_kb' => (int) env('FINCORE_OCR_MAX_FILE_KB', 10240),
+    ],
 ];

@@ -7,6 +7,9 @@
             <small class="text-muted">Audit-compliant Double-Entry General Ledger Transactions ({{ $currency }})</small>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ route('fincore.receipts.scanner') }}" class="btn btn-outline-primary btn-sm">
+                🤖 AI Receipt Scanner
+            </a>
             <a href="{{ route('fincore.journals.create') }}" class="btn fc-btn-primary btn-sm">
                 + Create Journal Voucher
             </a>

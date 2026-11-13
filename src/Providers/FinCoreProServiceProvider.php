@@ -5,6 +5,7 @@ namespace Nml\FinCorePro\Providers;
 use Illuminate\Support\ServiceProvider;
 use Nml\FinCore\Services\LedgerEngine;
 use Nml\FinCorePro\Services\ErpPostingEngine;
+use Nml\FinCorePro\Services\ReceiptOcrService;
 
 class FinCoreProServiceProvider extends ServiceProvider
 {
@@ -17,6 +18,10 @@ class FinCoreProServiceProvider extends ServiceProvider
 
         $this->app->singleton('fincore-pro', function ($app) {
             return new ErpPostingEngine($app->make(LedgerEngine::class));
+        });
+
+        $this->app->singleton(ReceiptOcrService::class, function () {
+            return new ReceiptOcrService();
         });
     }
 
