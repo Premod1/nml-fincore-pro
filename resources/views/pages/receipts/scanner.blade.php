@@ -338,14 +338,17 @@
                 renderPreview(file);
                 showStatus('success', '<strong>Scanning with Gemini Vision...</strong> Extracting supplier metadata and line items.');
 
+                const csrfToken = document.querySelector('#fc-ocr-draft-form input[name="_token"]')?.value || '{{ csrf_token() }}';
                 const formData = new FormData();
                 formData.append('receipt', file);
+                formData.append('_token', csrfToken);
 
                 try {
                     const response = await fetch('{{ route("fincore.receipts.scan") }}', {
                         method: 'POST',
+                        credentials: 'same-origin',
                         headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-CSRF-TOKEN': csrfToken,
                             'Accept': 'application/json'
                         },
                         body: formData

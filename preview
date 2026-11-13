@@ -35,6 +35,7 @@ putenv("DB_CONNECTION=sqlite");
 putenv("DB_DATABASE={$sqlitePath}");
 putenv("APP_KEY=base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10=");
 putenv("FINCORE_PRO_MODE=standalone");
+putenv("SESSION_DRIVER=file");
 
 echo "📦 Running Core & Pro migrations...\n";
 passthru(PHP_BINARY . ' ' . escapeshellarg($rootDir . '/vendor/bin/testbench') . ' migrate --force');
