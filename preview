@@ -57,4 +57,4 @@ echo "🌐 Open UI in Browser: http://127.0.0.1:{$port}/accounting\n";
 echo "-------------------------------------------------------\n\n";
 
 $docRoot = $rootDir . '/vendor/orchestra/testbench-core/laravel/public';
-passthru(PHP_BINARY . " -S 127.0.0.1:{$port} -t " . escapeshellarg($docRoot));
+passthru(PHP_BINARY . " -d variables_order=EGPCS -S 127.0.0.1:{$port} -t " . escapeshellarg($docRoot));

@@ -220,7 +220,7 @@ return [
     |
     */
     'gemini' => [
-        'api_key'          => env('GEMINI_API_KEY'),
+        'api_key'          => env('GEMINI_API_KEY') ?: (getenv('GEMINI_API_KEY') ?: null),
         'model'            => env('FINCORE_GEMINI_MODEL', 'gemini-3.8-flash'),
         'endpoint'         => env('FINCORE_GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/interactions'),
         'timeout'          => (int) env('FINCORE_GEMINI_TIMEOUT', 45),
