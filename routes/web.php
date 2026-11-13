@@ -9,6 +9,7 @@ use Nml\FinCorePro\Http\Controllers\DashboardController;
 use Nml\FinCorePro\Http\Controllers\FixedAssetController;
 use Nml\FinCorePro\Http\Controllers\JournalController;
 use Nml\FinCorePro\Http\Controllers\MappingController;
+use Nml\FinCorePro\Http\Controllers\ReceiptScannerController;
 use Nml\FinCorePro\Http\Controllers\ReportController;
 use Nml\FinCorePro\Http\Controllers\SettingsController;
 
@@ -32,6 +33,12 @@ Route::group([
     Route::get('/journals/{id}', [JournalController::class, 'show'])->name('journals.show');
     Route::post('/journals/{id}/post', [JournalController::class, 'post'])->name('journals.post');
     Route::post('/journals/{id}/void', [JournalController::class, 'void'])->name('journals.void');
+
+    // 3b. AI Receipt & Invoice OCR Scanner
+    Route::get('/receipts/scanner', [ReceiptScannerController::class, 'index'])->name('receipts.scanner');
+    Route::post('/receipts/scan', [ReceiptScannerController::class, 'scan'])->name('receipts.scan');
+    Route::post('/receipts/draft', [ReceiptScannerController::class, 'storeDraft'])->name('receipts.draft');
+    Route::post('/receipts/{id}/approve', [ReceiptScannerController::class, 'approve'])->name('receipts.approve');
 
     // 4. Banking & Reconciliations
     Route::get('/banking/reconciliations', [BankReconciliationController::class, 'index'])->name('banking.reconciliations.index');

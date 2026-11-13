@@ -12,6 +12,10 @@
                 📝 <strong>Journal Entry</strong> <small class="text-muted d-block">Manual debit/credit voucher</small>
             </a>
             <div class="fc-dropdown-divider"></div>
+            <a href="{{ route('fincore.receipts.scanner') }}" class="fc-dropdown-item">
+                🤖 <strong>AI Receipt &amp; Invoice OCR</strong> <small class="text-muted d-block">Scan PDF or photo to draft bill</small>
+            </a>
+            <div class="fc-dropdown-divider"></div>
             <a href="{{ route('fincore.accounts.index') }}" class="fc-dropdown-item">
                 🗂️ <strong>New Ledger Account</strong> <small class="text-muted d-block">Add to Chart of Accounts</small>
             </a>
@@ -74,11 +78,14 @@
 
     {{-- 4. Expenses & Suppliers --}}
     <div class="fc-dropdown">
-        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.reports.ap-ageing') ? 'active' : '' }}">
+        <button type="button" class="fc-dropdown-toggle fc-subnav-link {{ request()->routeIs('fincore.reports.ap-ageing', 'fincore.receipts.*') ? 'active' : '' }}">
             Expenses &amp; Payables ▾
         </button>
         <div class="fc-dropdown-menu" style="min-width: 250px;">
             <div class="px-3 py-1 text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Supplier Payables</div>
+            <a href="{{ route('fincore.receipts.scanner') }}" class="fc-dropdown-item">
+                🤖 AI Receipt &amp; Invoice Scanner
+            </a>
             <a href="{{ route('fincore.journals.index', ['search' => 'credit_purchase']) }}" class="fc-dropdown-item">
                 Supplier Bills &amp; GRNs (A/P)
             </a>
