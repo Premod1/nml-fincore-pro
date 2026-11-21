@@ -1,18 +1,16 @@
 # NML FinCore PRO (`nml/fincore-pro`)
 
-**Commercial UI Starter Kit & Zero-Accounting-Knowledge ERP Posting Rules Engine** for [`nml/fincore`](https://github.com/Premod1/nml-fincore).
+**UI Starter Kit & Zero-Accounting-Knowledge ERP Posting Rules Engine** for [`nml/fincore`](https://github.com/Premod1/nml-fincore).
 
-> **License:** Proprietary / Commercial. Distributed to GitHub Sponsors (**$29 Tier**) with automated private repository access and lifetime updates.
+> **Public Repository:** Openly available on GitHub — install directly via Composer without private access or a personal access token.
 
 ---
 
-## 🚀 How to Install & Connect to Your Host Laravel ERP (Post-Sponsorship)
+## 🚀 How to Install & Connect to Your Host Laravel ERP
 
-Once you sponsor **$29** on [GitHub Sponsors (Premod1)](https://github.com/sponsors/Premod1), you are instantly invited as a collaborator to the private `Premod1/nml-fincore-pro` repository.
+Follow these simple steps to integrate it into any Laravel ERP, POS, or SaaS application:
 
-Follow these 3 simple steps to integrate it into any Laravel ERP, POS, or SaaS application:
-
-### Step 1: Configure Private VCS in your ERP's `composer.json`
+### Step 1: Configure VCS in your ERP's `composer.json`
 
 Open your host ERP's `composer.json` file and register the repository:
 
@@ -33,8 +31,6 @@ Then run the installation command:
 ```bash
 composer require nml/fincore-pro
 ```
-
-*(Note: Composer will authenticate using your GitHub account or Personal Access Token if prompted).*
 
 ---
 
